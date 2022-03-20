@@ -13,7 +13,10 @@
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+#include <fstream>
 
+#define COLOR_LABEL_BK RGB(100, 0, 0)
+#define COLOR_LABEL_TEXT RGB(255, 255, 255)
 
 // 응용 프로그램 정보에 사용되는 CAboutDlg 대화 상자입니다.
 
@@ -54,6 +57,7 @@ END_MESSAGE_MAP()
 
 CMFCApplication1Dlg::CMFCApplication1Dlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_MFCAPPLICATION1_DIALOG, pParent)
+	, m_dNum(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -61,6 +65,9 @@ CMFCApplication1Dlg::CMFCApplication1Dlg(CWnd* pParent /*=nullptr*/)
 void CMFCApplication1Dlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_BUTTON_NEW, m_btnNew);
+	DDX_Text(pDX, IDC_EDIT1, m_dNum);
+	DDX_Control(pDX, IDC_STATIC1, m_lblNum);
 }
 
 BEGIN_MESSAGE_MAP(CMFCApplication1Dlg, CDialogEx)
@@ -68,6 +75,12 @@ BEGIN_MESSAGE_MAP(CMFCApplication1Dlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BUTTON_NEW, &CMFCApplication1Dlg::OnBnClickedButtonNew)
+	ON_BN_CLICKED(IDOK, &CMFCApplication1Dlg::OnBnClickedOk)
+	ON_WM_DESTROY()
+	ON_BN_CLICKED(IDC_BUTTON_IMAGE, &CMFCApplication1Dlg::OnBnClickedButtonImage)
+	ON_BN_CLICKED(IDC_BUTTON_PARAMETER, &CMFCApplication1Dlg::OnBnClickedButtonParameter)
+	ON_BN_CLICKED(IDC_BUTTON_SAVE, &CMFCApplication1Dlg::OnBnClickedButtonSave)
+	ON_BN_CLICKED(IDC_BUTTON_LOAD, &CMFCApplication1Dlg::OnBnClickedButtonLoad)
 END_MESSAGE_MAP()
 
 
@@ -103,6 +116,12 @@ BOOL CMFCApplication1Dlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
 
 	// TODO: 여기에 추가 초기화 작업을 추가합니다.
+
+	InitButtons(&m_btnNew);
+	InitLabels(&m_lblNum);
+	InitDialog();
+
+	UpdateIni(true);
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -156,12 +175,142 @@ HCURSOR CMFCApplication1Dlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+void CMFCApplication1Dlg::InitDialog() {
 
+	m_pDlgImage = new CDlgImage();
+	m_pDlgImage->Create(IDD_CDlgImage);
+	m_pDlgImage->MoveWindow(20, 100, 650, 450);
+
+	m_pDlgParameter = new CDlgParameter();
+	m_pDlgParameter->Create(IDD_CDlgParameter);
+	m_pDlgParameter->MoveWindow(20, 100, 650, 450);
+
+	setDlgView(DLG_VIEW_IMAGE);
+}
+
+void CMFCApplication1Dlg::setDlgView(int nMode) {
+	
+	if (nMode & DLG_VIEW_IMAGE)
+		m_pDlgImage->ShowWindow(SW_SHOW);
+	else
+		m_pDlgImage->ShowWindow(SW_HIDE);
+
+	if (nMode & DLG_VIEW_PARAMETER)
+		m_pDlgParameter->ShowWindow(SW_SHOW);
+	else
+		m_pDlgParameter->ShowWindow(SW_HIDE);
+}
+
+void CMFCApplication1Dlg::InitButtons(CButtonST* pButton) {
+
+	CFont Font;
+	Font.CreatePointFont(30, _T("Consolas"));
+
+	pButton->SetFont(&Font);
+	pButton->SetColor(CButtonST::BTNST_COLOR_BK_IN, COLOR_LABEL_BK);
+	pButton->SetColor(CButtonST::BTNST_COLOR_BK_OUT, COLOR_LABEL_BK);
+	pButton->SetColor(CButtonST::BTNST_COLOR_BK_FOCUS, COLOR_LABEL_BK);
+	pButton->SetColor(CButtonST::BTNST_COLOR_FG_IN, COLOR_LABEL_TEXT);
+	pButton->SetColor(CButtonST::BTNST_COLOR_FG_OUT, COLOR_LABEL_TEXT);
+	pButton->SetColor(CButtonST::BTNST_COLOR_FG_FOCUS, COLOR_LABEL_TEXT);
+}
+
+void CMFCApplication1Dlg::InitLabels(CLabel* pLabel) {
+
+	pLabel->SetFontName(_T("Consolas"));
+	pLabel->SetFontSize(20);
+
+	pLabel->SetBkColor(COLOR_LABEL_BK);
+	pLabel->SetTextColor(COLOR_LABEL_TEXT);
+}
+
+void CMFCApplication1Dlg::UpdateIni(BOOL bLoad) {
+
+	CString fileName = CString("C://Users//sorab//source//repos//Devbeomy//MFCApplication1//MFCApplication1//Glim.ini");
+	std::ifstream file(fileName);
+
+	if (!file.good()) bLoad = false;
+
+	CString str(fileName);
+	CString strSection(_T("Parameters"));
+
+	CIni ini(str, strSection);
+
+	ini.SerGet(bLoad, m_dNum, _T("NUM"));
+
+	UpdateData(false);
+}
 
 void CMFCApplication1Dlg::OnBnClickedButtonNew()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 
-	CDlgNew Dlg;
-	Dlg.DoModal();
+	UpdateData(true);
+	m_lblNum.SetText(m_dNum);
+}
+
+
+void CMFCApplication1Dlg::OnBnClickedOk()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+
+	UpdateData(true);
+	UpdateIni(false);
+
+	CDialogEx::OnOK();
+}
+
+
+void CMFCApplication1Dlg::OnDestroy()
+{
+	CDialogEx::OnDestroy();
+
+	// TODO: 여기에 메시지 처리기 코드를 추가합니다.
+	delete m_pDlgImage;
+	delete m_pDlgParameter;
+}
+
+
+void CMFCApplication1Dlg::OnBnClickedButtonImage()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+
+	setDlgView(DLG_VIEW_IMAGE);
+}
+
+
+void CMFCApplication1Dlg::OnBnClickedButtonParameter()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+
+	setDlgView(DLG_VIEW_PARAMETER);
+}
+
+
+void CMFCApplication1Dlg::OnBnClickedButtonSave()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+}
+
+
+void CMFCApplication1Dlg::OnBnClickedButtonLoad()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+
+	char strFilter[] = "BMP ONLY (*.BMP) | *.BMP;*.bmp | All Files(*.*)|*.*||";
+	CFileDialog FileDlg(TRUE, CString(".BMP"), NULL, 0, CString(strFilter));
+
+	if (FileDlg.DoModal() == IDOK) {
+
+		HRESULT hr = m_pDlgImage->m_imgFile.Load(FileDlg.GetPathName());
+
+		if (SUCCEEDED(hr)) {
+
+			//이미지 출력
+			m_pDlgParameter->ShowWindow(SW_HIDE);
+			m_pDlgImage->ShowWindow(SW_HIDE);
+			m_pDlgImage->ShowWindow(SW_HIDE); // for repaint
+
+		}
+	}
 }

@@ -3,7 +3,11 @@
 //
 
 #pragma once
-
+#include "BtnST.h"
+#include "Label.h"
+#include "ini.h"
+#include "CDlgImage.h"
+#include "CDlgParameter.h"
 
 // CMFCApplication1Dlg 대화 상자
 class CMFCApplication1Dlg : public CDialogEx
@@ -33,4 +37,24 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnBnClickedButtonNew();
+	CButtonST m_btnNew;
+	void InitButtons(CButtonST* pButton);
+	double m_dNum;
+	CLabel m_lblNum;
+	void InitLabels(CLabel* pLabel);
+
+	void UpdateIni(BOOL bLoad);
+	afx_msg void OnBnClickedOk();
+
+	CDlgImage* m_pDlgImage;
+	CDlgParameter* m_pDlgParameter;
+
+	void InitDialog();
+	void setDlgView(int nMode);
+
+	afx_msg void OnDestroy();
+	afx_msg void OnBnClickedButtonImage();
+	afx_msg void OnBnClickedButtonParameter();
+	afx_msg void OnBnClickedButtonSave();
+	afx_msg void OnBnClickedButtonLoad();
 };
