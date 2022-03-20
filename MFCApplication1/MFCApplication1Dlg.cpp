@@ -290,6 +290,13 @@ void CMFCApplication1Dlg::OnBnClickedButtonParameter()
 void CMFCApplication1Dlg::OnBnClickedButtonSave()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+
+	char strFilter[] = "BMP ONLY (*.BMP) | *.BMP;*.bmp | All Files(*.*)|*.*||";
+	CFileDialog FileDlg(TRUE, CString(".BMP"), NULL, 0, CString(strFilter));
+
+	if (FileDlg.DoModal() == IDOK) {
+		m_pDlgImage->m_imgFile.Save(FileDlg.GetPathName());
+	}
 }
 
 
@@ -301,7 +308,6 @@ void CMFCApplication1Dlg::OnBnClickedButtonLoad()
 	CFileDialog FileDlg(TRUE, CString(".BMP"), NULL, 0, CString(strFilter));
 
 	if (FileDlg.DoModal() == IDOK) {
-
 		HRESULT hr = m_pDlgImage->m_imgFile.Load(FileDlg.GetPathName());
 
 		if (SUCCEEDED(hr)) {
@@ -309,7 +315,7 @@ void CMFCApplication1Dlg::OnBnClickedButtonLoad()
 			//이미지 출력
 			m_pDlgParameter->ShowWindow(SW_HIDE);
 			m_pDlgImage->ShowWindow(SW_HIDE);
-			m_pDlgImage->ShowWindow(SW_HIDE); // for repaint
+			m_pDlgImage->ShowWindow(SW_SHOW); // for repaint
 
 		}
 	}
